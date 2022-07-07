@@ -4,17 +4,11 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 	"sync"
-    "flag"
 )
 
 func main() {
-	var domain_input = flag.String("d", "", "Domain to generate subdomains with")
-    flag.Parse()
-    domain := *domain_input
-    fmt.Println(domain)
 	processed := make(chan string)
 	subdomains := make(chan string)
 	domains := make(map[string]struct{})
@@ -25,9 +19,13 @@ func main() {
 
 		go func() {
 			for subdomain := range subdomains {
-				reg, _ := regexp.Compile("[^a-zA-Z0-9-.]+")
-				record := reg.ReplaceAllString(strings.ToLower(subdomain+"."+domain), "")
-				processed <- record
+				if (strings.Contains(subdomain, "Discovered open port")) {
+					words := strings.Fields(subdomain)
+					record := words[5] + ":" + words[3]
+					clean := strings.Split(record, "/")
+					record = clean[0]
+					processed <- record
+				}
 
 			}
 
